@@ -46,20 +46,16 @@
 		}
 
 		for (var i = 0; i < outputs.length; i++){
-			if (outputs[i].manufacturer == "Roland Corp.") {
-				if (outputs[i].name == "GO:KEYS") {
-					outport = i;
-					console.log(outport);
-				}
+			if (outputs[i].name == "GO:KEYS") {
+				outport = i;
+				console.log(outport);
 			}
 		}
 
 		for (var i = 0; i < inputs.length; i++){
-			if (inputs[i].manufacturer == "Roland Corp.") {
-				if (inputs[i].name == "GO:KEYS") {
-					inputs[i].onmidimessage = handleMIDIMessage;
-					inputs[i].onstatechange = handleStateChange;
-				}
+			if (inputs[i].name == "GO:KEYS") {
+				inputs[i].onmidimessage = handleMIDIMessage;
+				inputs[i].onstatechange = handleStateChange;
 			}
 		}
 		if (outport < 0) setTimeout(function() { midiInit(); }, 2000);
