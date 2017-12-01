@@ -10,7 +10,7 @@
 	var beatCnt = 0;
 	var lastF8Cnt = 0;
 	var deviceConnect = 0;
-	var outport = 0;
+	var outport = -1;
 /* -------------------------------------------------------------------------	*/
 	midiInit();
 
@@ -62,6 +62,7 @@
 				}
 			}
 		}
+		if (outport < 0) setTimeout(function() { midiInit(); }, 2000);
 	}
 
 	function failure(error) 
