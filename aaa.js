@@ -11,6 +11,8 @@
 	var lastF8Cnt = 0;
 	var deviceConnect = 0;
 	var outport = -1;
+	var rsv_note = 0;
+
 /* -------------------------------------------------------------------------	*/
 	midiInit();
 
@@ -135,6 +137,19 @@
 		return ((beatCnt % 4) + 1) ;
 	};
 
+	ext.func_note = function() {
+		return (rsv_note % 12);
+	};
+
+	ext.func_key_on = function() {
+		if (noteon_flg) {
+			noteon_flg = false;
+
+			return true;
+		}
+		return false;
+	};
+
 	ext.func_fc = function(part) {
 		switch (part) {
 		case 'All':
@@ -252,7 +267,47 @@
 		}
 		setTimeout(function() { callback(); }, 500);
 	};
-
+	ext.func_is_note = function(note) {
+		switch(note){
+		case 'C':
+			if (rsv_note % 12 == 0) return true;
+			break;
+		case 'C#':
+			if (rsv_note % 12 == 1) return true;
+			break;
+		case 'D':
+			if (rsv_note % 12 == 2) return true;
+			break;
+		case 'D#':
+			if (rsv_note % 12 == 3) return true;
+			break;
+		case 'E':
+			if (rsv_note % 12 == 4) return true;
+			break;
+		case 'F':
+			if (rsv_note % 12 == 5) return true;
+			break;
+		case 'F#':
+			if (rsv_note % 12 == 6) return true;
+			break;
+		case 'G':
+			if (rsv_note % 12 == 7) return true;
+			break;
+		case 'G#':
+			if (rsv_note % 12 == 8) return true;
+			break;
+		case 'A':
+			if (rsv_note % 12 == 9) return true;
+			break;
+		case 'A#':
+			if (rsv_note % 12 == 10) return true;
+			break;
+		case 'B':
+			if (rsv_note % 12 == 11) return true;
+			break;
+		}
+		return false;
+	};
 	ext.func_chord = function(chord) {
 
 		switch (chord) {
@@ -337,9 +392,13 @@
 			['r', 'measure', 'func_meas'],
 			['r', 'beat', 'func_beat'],
 			['r', 'tick', 'func_f8'],
+			['h', 'key on',	'func_key_on'],
+			['b', 'note %m.note', 'func_is_note', 'C'],
+			['r', 'note', 'func_note'],
 			['-'],
 		],
 		menus: {
+			note: ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B',],
 			chord: ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B',],
 			type: ['Trance','Funk','House','Drum N Bass','Neo HipHop','Pop','Bright Rock','Trap Step','Future Bass','Trad HipHop','EDM','R&B',],
 			part: ['All', 'Drums', 'Bass', 'Part A', 'Part B'],
@@ -348,5 +407,6 @@
 
 	// Register the extension
 	ScratchExtensions.register('GO:KEYS Extesion', descriptor, ext);
+
 
 })({});
