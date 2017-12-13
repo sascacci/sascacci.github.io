@@ -28,7 +28,6 @@
 	function handleStateChange(event) 
 	{
 		if (event.port.state == "connected") {
-			deviceConnect = 1;
 			console.log("GO:KEYS Connected");
 		} else {
 			deviceConnect = 0;
@@ -107,6 +106,7 @@
 					lastF8Cnt=0;
 					console.log("0xFC");
 				} else if (ev.data[0] == 0xF8) {
+					deviceConnect = 1;
 					if (startStop) {
 						f8Cnt++;
 						measCnt = Math.floor(f8Cnt / 96);
@@ -118,12 +118,12 @@
 
 	}
 
-	function sendNRPN(ch, nrpn_lsb, nrpn_msb, data_lsb, data_msb)
+	function sendNRPN(ch, nrpn_msb, nrpn_lsb, data_msb, data_lsb)
 	{
-		sendMIDI(0xB0 | ch, 0x62, nrpn_lsb);
 		sendMIDI(0xB0 | ch, 0x63, nrpn_msb);
-		sendMIDI(0xB0 | ch, 0x26, data_lsb);
+		sendMIDI(0xB0 | ch, 0x62, nrpn_lsb);
 		sendMIDI(0xB0 | ch, 0x06, data_msb);
+		sendMIDI(0xB0 | ch, 0x26, data_lsb);
 	}
 
 	function sendMIDI(d0, d1, d2)
@@ -161,7 +161,7 @@
 		return false;
 	};
 
-	ext.func_fc = function(part) {
+	ext.func_stop = function(part) {
 		switch (part) {
 		case 'All':
 			startStop = 0;
@@ -169,224 +169,183 @@
 			f8Cnt = 0;
 			lastF8Cnt=0;
 			console.log("stop All");
-			sendMIDI(0x9C, 0x00, 0x00);
+			sendNRPN(0x0F, 0, 3, 0, 0);
 			break;
 		case 'Drums':
-			sendMIDI(0x9C, 0x00, 0x01);
+			sendNRPN(0x0F, 0, 3, 0, 1);
 			break;
 		case 'Bass':
-			sendMIDI(0x9C, 0x00, 0x02);
+			sendNRPN(0x0F, 0, 3, 0, 2);
 			break;
-		case 'Part A':
-			sendMIDI(0x9C, 0x00, 0x03);
+		case 'Melody A':
+			sendNRPN(0x0F, 0, 3, 0, 3);
 			break;
-		case 'Part B':
-			sendMIDI(0x9C, 0x00, 0x04);
+		case 'Melody B':
+			sendNRPN(0x0F, 0, 3, 0, 4);
 			break;
 		}
-	};
-
-	ext.func_note_on = function() {
-		sendMIDI(0x90, 36, 0x7F);
-	};
-
-	ext.func_note_off = function() {
-		sendMIDI(0x90, 36, 0x00);
-	};
-
-	ext.func_test = function(val, meas) {
-		val--;
-		if (val < 0) val = 0;
-		if (val > 10) val = 10;
-		sendMIDI(0x9A, 0, val);
 	};
 
 	ext.func_drum = function(val) {
 		val--;
 		if (val < 0) val = 0;
 		if (val > 10) val = 10;
-		sendMIDI(0x9A, 0, val);
+		sendNRPN(0x0F, 0, 1, 0, val);
 	};
 
 	ext.func_bass = function(val) {
 		val--;
 		if (val < 0) val = 0;
 		if (val > 10) val = 10;
-		sendMIDI(0x9A, 1, val);
+		sendNRPN(0x0F, 0, 1, 1, val);
 	};
 
 	ext.func_parta = function(val) {
 		val--;
 		if (val < 0) val = 0;
 		if (val > 10) val = 10;
-		sendMIDI(0x9A, 2, val);
+		sendNRPN(0x0F, 0, 1, 2, val);
 	};
 
 	ext.func_partb = function(val) {
 		val--;
 		if (val < 0) val = 0;
 		if (val > 10) val = 10;
-		sendMIDI(0x9A, 3, val);
+		sendNRPN(0x0F, 0, 1, 3, val);
 	};
 
-	ext.func_partx = function(val) {
+	ext.func_play = function(part, val) {
 		val--;
 		if (val < 0) val = 0;
-		if (val > 11) val = 11;
-		sendMIDI(0x9A, 4, val);
+		if (val > 10) val = 10;
+		switch (part) {
+		case 'Drums':
+			sendNRPN(0x0F, 0, 1, 0, val);
+			break;
+		case 'Bass':
+			sendNRPN(0x0F, 0, 1, 1, val);
+			break;
+		case 'Melody A':
+			sendNRPN(0x0F, 0, 1, 2, val);
+			break;
+		case 'Melody B':
+			sendNRPN(0x0F, 0, 1, 3, val);
+			break;
+		}
 	};
+
 
 	ext.func_type = function(type, callback) {
 
 		switch (type) {
 		case 'Trance':
-			sendMIDI(0x9D, 0x00, 0x00);
+			sendNRPN(0x0F, 0, 0, 0, 0);
 			break;
 		case 'Funk':
-			sendMIDI(0x9D, 0x00, 0x01);
+			sendNRPN(0x0F, 0, 0, 0, 1);
 			break;
 		case 'House':
-			sendMIDI(0x9D, 0x00, 0x02);
+			sendNRPN(0x0F, 0, 0, 0, 2);
 			break;
 		case 'Drum N Bass':
-			sendMIDI(0x9D, 0x00, 0x03);
+			sendNRPN(0x0F, 0, 0, 0, 3);
 			break;
 		case 'Neo HipHop':
-			sendMIDI(0x9D, 0x00, 0x04);
+			sendNRPN(0x0F, 0, 0, 0, 4);
 			break;
 		case 'Pop':
-			sendMIDI(0x9D, 0x00, 0x05);
+			sendNRPN(0x0F, 0, 0, 0, 5);
 			break;
 		case 'Bright Rock':
-			sendMIDI(0x9D, 0x00, 0x06);
+			sendNRPN(0x0F, 0, 0, 0, 6);
 			break;
 		case 'Trap Step':
-			sendMIDI(0x9D, 0x00, 0x07);
+			sendNRPN(0x0F, 0, 0, 0, 7);
 			break;
 		case 'Future Bass':
-			sendMIDI(0x9D, 0x00, 0x08);
+			sendNRPN(0x0F, 0, 0, 0, 8);
 			break;
 		case 'Trad HipHop':
-			sendMIDI(0x9D, 0x00, 0x09);
+			sendNRPN(0x0F, 0, 0, 0, 9);
 			break;
 		case 'EDM':
-			sendMIDI(0x9D, 0x00, 0x0A);
+			sendNRPN(0x0F, 0, 0, 0, 10);
 			break;
 		case 'R&B':
-			sendMIDI(0x9D, 0x00, 0x0B);
+			sendNRPN(0x0F, 0, 0, 0, 11);
 			break;
 		case 'Reggaeton':
-			sendMIDI(0x9D, 0x00, 0x0C);
+			sendNRPN(0x0F, 0, 0, 0, 12);
 			break;
 		case 'Cumbia':
-			sendMIDI(0x9D, 0x00, 0x0D);
+			sendNRPN(0x0F, 0, 0, 0, 13);
 			break;
 		case 'ColombianPop':
-			sendMIDI(0x9D, 0x00, 0x0E);
+			sendNRPN(0x0F, 0, 0, 0, 14);
 			break;
 		case 'Bossa Lounge':
-			sendMIDI(0x9D, 0x00, 0x0F);
+			sendNRPN(0x0F, 0, 0, 0, 15);
 			break;
 		case 'Arrocha':
-			sendMIDI(0x9D, 0x00, 0x10);
+			sendNRPN(0x0F, 0, 0, 0, 16);
 			break;
 		case 'DrumÅfn Bossa':
-			sendMIDI(0x9D, 0x00, 0x11);
+			sendNRPN(0x0F, 0, 0, 0, 17);
 			break;
 		case 'Bahia Mix':
-			sendMIDI(0x9D, 0x00, 0x12);
+			sendNRPN(0x0F, 0, 0, 0, 18);
 			break;
 		case 'Power Rock':
-			sendMIDI(0x9D, 0x00, 0x13);
+			sendNRPN(0x0F, 0, 0, 0, 19);
 			break;
 		case 'Classic Rock':
-			sendMIDI(0x9D, 0x00, 0x14);
+			sendNRPN(0x0F, 0, 0, 0, 20);
 			break;
 		case 'J-Pop':
-			sendMIDI(0x9D, 0x00, 0x15);
+			sendNRPN(0x0F, 0, 0, 0, 21);
 			break;
 		}
 		setTimeout(function() { callback(); }, 500);
 	};
-	ext.func_is_note = function(note) {
-		switch(note){
-		case 'C':
-			if (rsv_note % 12 == 0) return true;
-			break;
-		case 'C#':
-			if (rsv_note % 12 == 1) return true;
-			break;
-		case 'D':
-			if (rsv_note % 12 == 2) return true;
-			break;
-		case 'D#':
-			if (rsv_note % 12 == 3) return true;
-			break;
-		case 'E':
-			if (rsv_note % 12 == 4) return true;
-			break;
-		case 'F':
-			if (rsv_note % 12 == 5) return true;
-			break;
-		case 'F#':
-			if (rsv_note % 12 == 6) return true;
-			break;
-		case 'G':
-			if (rsv_note % 12 == 7) return true;
-			break;
-		case 'G#':
-			if (rsv_note % 12 == 8) return true;
-			break;
-		case 'A':
-			if (rsv_note % 12 == 9) return true;
-			break;
-		case 'A#':
-			if (rsv_note % 12 == 10) return true;
-			break;
-		case 'B':
-			if (rsv_note % 12 == 11) return true;
-			break;
-		}
-		return false;
-	};
+
 	ext.func_chord = function(chord) {
 
 		switch (chord) {
 		case 'C':
-			sendMIDI(0x9B, 0x00, 0x00);
+			sendNRPN(0x0F, 0, 2, 0, 0);
 			break;
 		case 'C#':
-			sendMIDI(0x9B, 0x00, 0x01);
+			sendNRPN(0x0F, 0, 2, 0, 1);
 			break;
 		case 'D':
-			sendMIDI(0x9B, 0x00, 0x02);
+			sendNRPN(0x0F, 0, 2, 0, 2);
 			break;
 		case 'D#':
-			sendMIDI(0x9B, 0x00, 0x03);
+			sendNRPN(0x0F, 0, 2, 0, 3);
 			break;
 		case 'E':
-			sendMIDI(0x9B, 0x00, 0x04);
+			sendNRPN(0x0F, 0, 2, 0, 4);
 			break;
 		case 'F':
-			sendMIDI(0x9B, 0x00, 0x05);
+			sendNRPN(0x0F, 0, 2, 0, 5);
 			break;
 		case 'F#':
-			sendMIDI(0x9B, 0x00, 0x06);
+			sendNRPN(0x0F, 0, 2, 0, 6);
 			break;
 		case 'G':
-			sendMIDI(0x9B, 0x00, 0x07);
+			sendNRPN(0x0F, 0, 2, 0, 7);
 			break;
 		case 'G#':
-			sendMIDI(0x9B, 0x00, 0x08);
+			sendNRPN(0x0F, 0, 2, 0, 8);
 			break;
 		case 'A':
-			sendMIDI(0x9B, 0x00, 0x09);
+			sendNRPN(0x0F, 0, 2, 0, 9);
 			break;
 		case 'A#':
-			sendMIDI(0x9B, 0x00, 0x0A);
+			sendNRPN(0x0F, 0, 2, 0, 10);
 			break;
 		case 'B':
-			sendMIDI(0x9B, 0x00, 0x0B);
+			sendNRPN(0x0F, 0, 2, 0, 11);
 			break;
 		}
 	};
@@ -422,33 +381,28 @@
 /* -------------------------------------------------------------------------	*/
 	var descriptor = {
 		blocks: [
-			['w', 'loop mix %m.type', 'func_type', 'Trance'],
-			[' ', 'drum play %n', 'func_drum', 1],
-			[' ', 'bass play %n', 'func_bass', 1],
-			[' ', 'melody A play %n', 'func_parta', 1],
-			[' ', 'melody B play %n', 'func_partb', 1],
-			[' ', 'stop %m.part', 'func_fc', 'All'],
+			['w', 'genre %m.type', 'func_type', 'Trance'],
+			[' ', 'play %m.play  %n', 'func_play', 'Drums', 1],
+			[' ', 'stop %m.stop', 'func_stop', 'All'],
 			[' ', 'key %m.chord', 'func_chord', 'C'],
 			['w', 'wait %n measure', 'func_wait_meas', 1],
 			['r', 'measure', 'func_meas'],
 			['r', 'beat', 'func_beat'],
 			['r', 'tick', 'func_f8'],
 			['h', 'key on',	'func_key_on'],
-			['b', 'note %m.note', 'func_is_note', 'C'],
 			['r', 'note', 'func_note'],
 			['r', 'velocity', 'func_velo'],
 			['-'],
 		],
 		menus: {
-			note: ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B',],
 			chord: ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B',],
-			type: ['Trance','Funk','House','Drum N Bass','Neo HipHop','Pop','Bright Rock','Trap Step','Future Bass','Trad HipHop','EDM','R&B', 'Reggaeton', 'Cumbia', 'ColombianPop', 'Bossa Lounge', 'Arrocha', 'DrumÅfn Bossa', 'Bahia Mix', 'Power Rock', 'Classic Rock', 'J-Pop'],
-			part: ['All', 'Drums', 'Bass', 'Melody A', 'Melody B'],
+			type: ['Trance','Funk','House','Drum N Bass','Neo HipHop','Pop','Bright Rock','Trap Step','Future Bass','Trad HipHop','EDM','R&B', 'Reggaeton', 'Cumbia', 'ColombianPop', 'Bossa Lounge', 'Arrocha', 'Drum N Bossa', 'Bahia Mix', 'Power Rock', 'Classic Rock', 'J-Pop'],
+			play: ['Drums', 'Bass', 'Melody A', 'Melody B'],
+			stop: ['All', 'Drums', 'Bass', 'Melody A', 'Melody B'],
 		},
 	};
 
 	// Register the extension
 	ScratchExtensions.register('GO:KEYS Extesion', descriptor, ext);
-
 
 })({});
