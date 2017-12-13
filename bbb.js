@@ -381,7 +381,7 @@
 /* -------------------------------------------------------------------------	*/
 	var descriptor = {
 		blocks: [
-			['w', 'genre %m.type', 'func_type', 'Trance'],
+			['w', 'loop mix %m.type', 'func_type', 'Trance'],
 			[' ', 'play %m.play  %n', 'func_play', 'Drums', 1],
 			[' ', 'stop %m.stop', 'func_stop', 'All'],
 			[' ', 'key %m.chord', 'func_chord', 'C'],
