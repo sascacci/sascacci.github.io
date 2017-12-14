@@ -48,14 +48,14 @@
 		}
 
 		for (var i = 0; i < outputs.length; i++){
-			if (outputs[i].name == "GO:KEYS") {
+			{
 				outport = i;
 				console.log(outport);
 			}
 		}
 
 		for (var i = 0; i < inputs.length; i++){
-			if (inputs[i].name == "GO:KEYS") {
+			{
 				inputs[i].onmidimessage = handleMIDIMessage;
 				inputs[i].onstatechange = handleStateChange;
 			}
