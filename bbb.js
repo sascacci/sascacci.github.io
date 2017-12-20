@@ -400,6 +400,7 @@
 			play: ['Drums', 'Bass', 'Melody A', 'Melody B'],
 			stop: ['All', 'Drums', 'Bass', 'Melody A', 'Melody B'],
 		},
+		url: 'https://rolandcom.github.io/gokeys-scratch-extension'
 	};
 
 	// Register the extension
