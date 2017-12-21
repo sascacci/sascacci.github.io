@@ -8,8 +8,8 @@
 	var startStop = 0;
 	var measCnt = 0;
 	var beatCnt = 0;
-	var lastF8Cnt = 0;
 	var deviceConnect = 0;
+	var inport = -1;
 	var outport = -1;
 	var rsv_note = 0;
 	var rsv_velo = 0;
@@ -46,21 +46,24 @@
 		for (var o = outputIterator.next(); !o.done; o = outputIterator.next()) {
 			outputs.push(o.value)
 		}
-
+		outport = -1;
 		for (var i = 0; i < outputs.length; i++){
-			{
+			var string = outputs[i].name;
+			if (string.indexOf('GO:KEYS') > -1) {
 				outport = i;
 				console.log(outport);
 			}
 		}
-
+		inport = -1;
 		for (var i = 0; i < inputs.length; i++){
-			{
+			var string = outputs[i].name;
+			if (string.indexOf('GO:KEYS') > -1) {
+				inport = i;
 				inputs[i].onmidimessage = handleMIDIMessage;
 				inputs[i].onstatechange = handleStateChange;
 			}
 		}
-		if (outport < 0) setTimeout(function() { midiInit(); }, 2000);
+		if (outport < 0 || inport < 0) setTimeout(function() { midiInit(); }, 2000);
 	}
 
 	function failure(error) 
@@ -96,14 +99,12 @@
 			case 0xF0:
 				if (ev.data[0] == 0xFA) {
 					startStop = 1;
-					//lastF8Cnt=0;
 					console.log("0xFA");
 				} else if (ev.data[0] == 0xFC) {
 					startStop = 0;
 					f8Cnt = 0;
 					beatCnt = 0;
 					measCnt = 0;
-					lastF8Cnt=0;
 					console.log("0xFC");
 				} else if (ev.data[0] == 0xF8) {
 					deviceConnect = 1;
@@ -167,7 +168,6 @@
 			startStop = 0;
 			measCnt = 0;
 			f8Cnt = 0;
-			lastF8Cnt=0;
 			console.log("stop All");
 			sendNRPN(0x0F, 0, 3, 0, 0);
 			break;
@@ -187,6 +187,7 @@
 	};
 
 	ext.func_drum = function(val) {
+		val = Math.floor(val);
 		val--;
 		if (val < 0) val = 0;
 		if (val > 10) val = 10;
@@ -194,6 +195,7 @@
 	};
 
 	ext.func_bass = function(val) {
+		val = Math.floor(val);
 		val--;
 		if (val < 0) val = 0;
 		if (val > 10) val = 10;
@@ -201,6 +203,7 @@
 	};
 
 	ext.func_parta = function(val) {
+		val = Math.floor(val);
 		val--;
 		if (val < 0) val = 0;
 		if (val > 10) val = 10;
@@ -208,6 +211,7 @@
 	};
 
 	ext.func_partb = function(val) {
+		val = Math.floor(val);
 		val--;
 		if (val < 0) val = 0;
 		if (val > 10) val = 10;
@@ -349,20 +353,13 @@
 			break;
 		}
 	};
+
 	ext.func_wait_meas = function(wait, callback) {
 
-		if (f8Cnt == 0) lastF8Cnt = 0;
-
-		var target = lastF8Cnt + (wait*96);
-
-		console.log("lastf8=",lastF8Cnt);
-		console.log("target=",target);
-
-		lastF8Cnt = target;
+		var dstTime = f8Cnt + (wait*96);
 
 		var timerID = setInterval(function() {
-			if (f8Cnt >= target) {
-				console.log("f8=",f8Cnt);
+			if (f8Cnt >= dstTime) {
 				clearInterval(timerID);
 				callback();
 			}
